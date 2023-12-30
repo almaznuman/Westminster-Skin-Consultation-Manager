@@ -10,12 +10,13 @@ abstract class person {
     private String surname;
     private Date dateofbirth;
     private int mobilenumber;
-    private SimpleDateFormat dateofbirthformatter = new SimpleDateFormat("dd/MM/yyyy");//to pass date in the format of string into a date object
 
     public person(String name, String surname, String dateofbirth, int mobilenumber) throws ParseException {
         this.name = name;
         this.surname = surname;
-        this.dateofbirth=dateofbirthformatter.parse(dateofbirth);
+        //to pass date in the format of string into a date object
+        SimpleDateFormat dateofbirthformatter = new SimpleDateFormat("dd/MM/yyyy");
+        this.dateofbirth= dateofbirthformatter.parse(dateofbirth);
         this.mobilenumber = mobilenumber;
     }
     public person(String name, String surname,int mobilenumber) {

@@ -17,15 +17,14 @@ class Doctor extends person {
         this.doc_licNumber = doc_licNumber;
         doctorcount++;
     }
+    //sorting doctor's last names in alphabetic ascending order
     /**
      * method to sort doctors in alphabetical order according to their surnames
      */
-    public static Comparator<Doctor> DocNameComparator = new Comparator<>() {//sorting doctor's last names in alphabetic ascending order
-        public int compare(Doctor d1, Doctor d2) {
-            String docname = d1.getSurname().toUpperCase();
-            String docname2 = d2.getSurname().toUpperCase();
-            return docname.compareTo(docname2);
-        }
+    public static Comparator<Doctor> DocNameComparator = (d1, d2) -> {
+        String docname = d1.getSurname().toUpperCase();
+        String docname2 = d2.getSurname().toUpperCase();
+        return docname.compareTo(docname2);
     };
 
     /**

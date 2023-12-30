@@ -9,7 +9,7 @@ public class Driverclass {
         driver.readDetails();//creates previous instances of doctor objected, where their data was stored into a file
         while(true) {
             System.out.println("------------------------------------------------");
-            System.out.println("");
+            System.out.println();
             System.out.println("1: Add a New Doctor");
             System.out.println("2: Delete a Doctor");
             System.out.println("3: Store program data");
@@ -20,25 +20,13 @@ public class Driverclass {
             System.out.println("\n"+"Enter Choice");
             String a = input.nextLine();
             switch (a) {
-                case "1":
-                    driver.addDoctor();
-                    break;
-                case "2":
-                    driver.deleteDoctor();
-                    break;
-                case "3":
-                    driver.saveDetails();
-                    break;
-                case "4":
-                    driver.printDoctor();
-                    break;
-                case "5":
-                    driver.gui();
-                    break;
-                case "0":
-                    System.exit(0);
-                default:
-                    System.out.println("Incorrect Entry, Try again");
+                case "1" -> driver.addDoctor();
+                case "2" -> driver.deleteDoctor();
+                case "3" -> driver.saveDetails();
+                case "4" -> driver.printDoctor();
+                case "5" -> driver.gui();
+                case "0" -> System.exit(0);
+                default -> System.out.println("Incorrect Entry, Try again");
             }
         }
     }

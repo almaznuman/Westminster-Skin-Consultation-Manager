@@ -20,7 +20,7 @@ import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 
 public class gui extends JFrame {// decide where to have the arrays so that data isn't erased after gui is closed not complete and notes encryption
-    private SimpleDateFormat dateofbirthformatter = new SimpleDateFormat("dd/MM/yyyy");//passes string entered in (dd/mm/yyyy) to create a date object
+    private final SimpleDateFormat dateofbirthformatter = new SimpleDateFormat("dd/MM/yyyy");//passes string entered in (dd/mm/yyyy) to create a date object
     File patientdata = new File("patientdata.txt");
     Cipher cipher;
     JPanel viewconsultationbuttonpannel=new JPanel(new GridLayout(2,1));
@@ -37,14 +37,14 @@ public class gui extends JFrame {// decide where to have the arrays so that data
     private String patient_surname;
     private String patient_DOB;
     private int patient_mobile_number = 0;
-    private ArrayList<consultation>consultations=new ArrayList<>();
-    private ArrayList<Doctor> docprint =westminsterskinconsultationmanager.getDoctors();
-    private static ArrayList <patient> patients= new ArrayList<>();
-    private String[][] data = new String [Doctor.getDoctorcount()][5];
-    private static String[][][]arrays = new String[Doctor.getDoctorcount()][31][10];
+    private final ArrayList<consultation>consultations=new ArrayList<>();
+    private final ArrayList<Doctor> docprint =westminsterskinconsultationmanager.getDoctors();
+    private static final ArrayList <patient> patients= new ArrayList<>();
+    private final String[][] data = new String [Doctor.getDoctorcount()][5];
+    private static final String[][][]arrays = new String[Doctor.getDoctorcount()][31][10];
     JButton selectdocotrbutton= new JButton("Select");
     public void setNotes(String notes) {
-        this.notes = notes;
+        gui.notes = notes;
     }
     private static String notes;
 
@@ -65,14 +65,11 @@ public class gui extends JFrame {// decide where to have the arrays so that data
         JPanel panel=new JPanel(new GridLayout(2,1));
         JButton getstartedbutton=new JButton("Get Started");
         getstartedbutton.setPreferredSize(new Dimension(100,20));
-        getstartedbutton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(true);
-                mainpage();
-                coverpage.setVisible(false);
-                coverpage.dispose();
-            }
+        getstartedbutton.addActionListener(e -> {
+            setVisible(true);
+            mainpage();
+            coverpage.setVisible(false);
+            coverpage.dispose();
         });
         flowbutn.add(getstartedbutton);
         JLabel label=new JLabel("Welcome to Westminster Skin Consultation Clinic");
@@ -151,110 +148,103 @@ public class gui extends JFrame {// decide where to have the arrays so that data
         JTextField timeslottext= new JTextField("");
         JButton FAQ= new JButton("FAQ");
         FAQ.setPreferredSize(new Dimension(100,20));
-        FAQ.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Enter Doctor as per the relevant doctor index"+"\n"+"Enter a date from 1-31"+"\n"+"Enter timeslots in the following format-  \"6.00 AM\" in 24 hour format"+"\n"+"NIC should consist of 6 digits");
-            }
-        });
+        FAQ.addActionListener(e -> JOptionPane.showMessageDialog(null, """
+                Enter Doctor as per the relevant doctor index
+                Enter a date from 1-31
+                Enter timeslots in the following format-  "6.00 AM" in 24 hour format
+                NIC should consist of 6 digits"""));
         JButton sortdocotr= new JButton("Sort doctors");
         sortdocotr.setPreferredSize(new Dimension(130,20));
-        sortdocotr.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int indexcount=1;
-                Collections.sort(docprint,Doctor.DocNameComparator);//sorts doctor by last name
-                for (int i = 0; i < docprint.size(); i++) {
-                    data[i][0]= String.valueOf(indexcount);
-                    indexcount++;
-                    data[i][1] = docprint.get(i).getDoctor_name();
-                    data[i][2] = docprint.get(i).getDoc_specialisation();
-                    data[i][3]= String.valueOf(docprint.get(i).getDoc_licNumber());
-                    data[i][4]=String.valueOf(docprint.get(i).getMobilenumber());
-                }
-                DefaultTableModel newModel = new DefaultTableModel(data, columnNames);
-                table.setModel(newModel);
-                intropage.revalidate();
-                intropage.repaint();
+        sortdocotr.addActionListener(e -> {
+            int indexcount1 =1;
+            docprint.sort(Doctor.DocNameComparator);//sorts doctor by last name
+            for (int i = 0; i < docprint.size(); i++) {
+                data[i][0]= String.valueOf(indexcount1);
+                indexcount1++;
+                data[i][1] = docprint.get(i).getDoctor_name();
+                data[i][2] = docprint.get(i).getDoc_specialisation();
+                data[i][3]= String.valueOf(docprint.get(i).getDoc_licNumber());
+                data[i][4]=String.valueOf(docprint.get(i).getMobilenumber());
             }
+            DefaultTableModel newModel = new DefaultTableModel(data, columnNames);
+            table.setModel(newModel);
+            intropage.revalidate();
+            intropage.repaint();
         });
-        selectdocotrbutton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    int tempdate;
-                    int input;
-                    input = Integer.parseInt(inputtextfield.getText());
-                    tempdate=Integer.parseInt(datetext.getText());
-                    int temptime=Integer.parseInt((timeslottext.getText()).split(":")[0]);
-                    if (tempdate<1 || tempdate>31){
-                        JOptionPane.showMessageDialog(null, "Invalid date. Please enter a date between 1-31");
-                    }else if(input<1 || input >Doctor.getDoctorcount()){
-                        JOptionPane.showMessageDialog(null, "Invalid Doctor input. Please enter a number between 1 and " + Doctor.getDoctorcount()+": ");
-                    }else if (temptime<9||temptime>18){
-                        JOptionPane.showMessageDialog(null, "Invalid Time-Slot input. Please enter a time between 9:00 AM and 18:00 PM");
-                    }
-                    else {
-                        dateselected=tempdate;
-                        timeselected=temptime;
-                        input--;
-                        doctorselected=input;
-                        tempdate--;
-                        temptime=temptime-9;
-                        if (!fullybooked(input, tempdate, temptime)) {
-                            //error label and assign new random doctor
-                            int randomdoctorindex= random.nextInt((Doctor.getDoctorcount()) + 1);
-                            // if the generated number is the excluded number, generate another one
-                            while (randomdoctorindex == input) {
-                                randomdoctorindex = random.nextInt((Doctor.getDoctorcount()) + 1);
-                            }
-                            JOptionPane.showMessageDialog(null, docprint.get(input).getDoctor_name()+" is currently fully booked, you are assigned to "+ docprint.get(randomdoctorindex).getDoctor_name());
-                            arrays[randomdoctorindex][tempdate][temptime]="NO";
-                            try {// stores the entire bookedarray into a textfile for future use
-                                BufferedWriter writer = new BufferedWriter(new FileWriter(gui.this.file));
-                                for (int i = 0; i < arrays.length; i++) {
-                                    for (int j = 0; j < arrays[i].length; j++) {
-                                        for (int k = 0; k < arrays[i][j].length; k++) {
-                                            writer.write(arrays[i][j][k] + " ");
-                                        }
-                                        writer.newLine();
-                                    }
-                                    writer.newLine();
-                                }
-                                writer.close();
-                            } catch (IOException l) {
-                                l.printStackTrace();
-                            }
-                            doctorschedule(docprint.get(randomdoctorindex).getDoctor_name(), randomdoctorindex,tempdate);
-                            setVisible(false);
-
-                        }else {
-                            arrays[input][tempdate][temptime]="NO";
-                            try {// stores the entire bookedarray into a textfile for future use
-                                BufferedWriter writer = new BufferedWriter(new FileWriter(gui.this.file));
-                                for (int i = 0; i < arrays.length; i++) {
-                                    for (int j = 0; j < arrays[i].length; j++) {
-                                        for (int k = 0; k < arrays[i][j].length; k++) {
-                                            writer.write(arrays[i][j][k] + " ");
-                                        }
-                                        writer.newLine();
-                                    }
-                                    writer.newLine();
-                                }
-                                writer.close();
-                            } catch (IOException l) {
-                                l.printStackTrace();
-                            }
-                            doctorschedule(docprint.get(input).getDoctor_name(), input,tempdate);
-                            setVisible(false);
-                        }
-                        inputtextfield.setText("");
-                        datetext.setText("");
-                        timeslottext.setText("");
-                    }
-                } catch (Exception a) {
-                    JOptionPane.showMessageDialog(null, "Please enter appropriate data in their appropriate fields (Click FAQ for more information)");
+        selectdocotrbutton.addActionListener(e -> {
+            try {
+                int tempdate;
+                int input;
+                input = Integer.parseInt(inputtextfield.getText());
+                tempdate=Integer.parseInt(datetext.getText());
+                int temptime=Integer.parseInt((timeslottext.getText()).split(":")[0]);
+                if (tempdate<1 || tempdate>31){
+                    JOptionPane.showMessageDialog(null, "Invalid date. Please enter a date between 1-31");
+                }else if(input<1 || input >Doctor.getDoctorcount()){
+                    JOptionPane.showMessageDialog(null, "Invalid Doctor input. Please enter a number between 1 and " + Doctor.getDoctorcount()+": ");
+                }else if (temptime<9||temptime>18){
+                    JOptionPane.showMessageDialog(null, "Invalid Time-Slot input. Please enter a time between 9:00 AM and 18:00 PM");
                 }
+                else {
+                    dateselected=tempdate;
+                    timeselected=temptime;
+                    input--;
+                    doctorselected=input;
+                    tempdate--;
+                    temptime=temptime-9;
+                    if (!fullybooked(input, tempdate, temptime)) {
+                        //error label and assign new random doctor
+                        int randomdoctorindex= random.nextInt((Doctor.getDoctorcount()) + 1);
+                        // if the generated number is the excluded number, generate another one
+                        while (randomdoctorindex == input) {
+                            randomdoctorindex = random.nextInt((Doctor.getDoctorcount()) + 1);
+                        }
+                        JOptionPane.showMessageDialog(null, docprint.get(input).getDoctor_name()+" is currently fully booked, you are assigned to "+ docprint.get(randomdoctorindex).getDoctor_name());
+                        arrays[randomdoctorindex][tempdate][temptime]="NO";
+                        try {// stores the entire bookedarray into a textfile for future use
+                            BufferedWriter writer = new BufferedWriter(new FileWriter(gui.this.file));
+                            for (String[][] array : arrays) {
+                                for (String[] strings : array) {
+                                    for (String string : strings) {
+                                        writer.write(string + " ");
+                                    }
+                                    writer.newLine();
+                                }
+                                writer.newLine();
+                            }
+                            writer.close();
+                        } catch (IOException l) {
+                            l.printStackTrace();
+                        }
+                        doctorschedule(docprint.get(randomdoctorindex).getDoctor_name(), randomdoctorindex,tempdate);
+                        setVisible(false);
+
+                    }else {
+                        arrays[input][tempdate][temptime]="NO";
+                        try {// stores the entire bookedarray into a textfile for future use
+                            BufferedWriter writer = new BufferedWriter(new FileWriter(gui.this.file));
+                            for (String[][] array : arrays) {
+                                for (String[] strings : array) {
+                                    for (String string : strings) {
+                                        writer.write(string + " ");
+                                    }
+                                    writer.newLine();
+                                }
+                                writer.newLine();
+                            }
+                            writer.close();
+                        } catch (IOException l) {
+                            l.printStackTrace();
+                        }
+                        doctorschedule(docprint.get(input).getDoctor_name(), input,tempdate);
+                        setVisible(false);
+                    }
+                    inputtextfield.setText("");
+                    datetext.setText("");
+                    timeslottext.setText("");
+                }
+            } catch (Exception a) {
+                JOptionPane.showMessageDialog(null, "Please enter appropriate data in their appropriate fields (Click FAQ for more information)");
             }
         });
         datetext.setPreferredSize(new Dimension(100,30));
@@ -277,44 +267,38 @@ public class gui extends JFrame {// decide where to have the arrays so that data
         setSize(800,850);
         setResizable(false);
         exit.setPreferredSize(new Dimension(150,50));
-        exit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                dispose();
-            }
+        exit.addActionListener(e -> {
+            setVisible(false);
+            dispose();
         });
         viewconsultationdetails.setPreferredSize(new Dimension(150,50));
-        viewconsultationdetails.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String decryptedText;
-                try {
-                    cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-                    SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
-                    cipher.init(Cipher.DECRYPT_MODE, secretKey);
-                    byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(notes));
-                    decryptedText = new String(decrypted, StandardCharsets.UTF_8);
+        viewconsultationdetails.addActionListener(e -> {
+            String decryptedText;
+            try {
+                cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+                SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+                cipher.init(Cipher.DECRYPT_MODE, secretKey);
+                byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(notes));
+                decryptedText = new String(decrypted, StandardCharsets.UTF_8);
 
-                } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException |
-                         BadPaddingException | InvalidKeyException a) {
-                    throw new RuntimeException(a);
-                }
-                JTextArea details= new JTextArea();
-                details.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                details.setPreferredSize(new Dimension(500,80));
-                details.setEditable(false);
-                String[]text1={"Doctor name- "+ docprint.get(doctorselected).getDoctor_name(),"Patient name- "+patient_name+" "+patient_surname,"Date- "+dateselected+"th of january","Time- "+timeselected+":00"+" Notes- "+decryptedText,"Cost- "+cost};
-                for (String line : text1) {
-                    details.append(line + "\n");
-                }
-                JPanel textareapanel=new JPanel(new FlowLayout());
-                textareapanel.add(details);
-                viewconsultationbuttonpannel.add(textareapanel);
-                viewconsultationbuttonpannel.revalidate();
-                viewconsultationbuttonpannel.repaint();
-                viewconsultationdetails.setEnabled(false);
+            } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException |
+                     BadPaddingException | InvalidKeyException a) {
+                throw new RuntimeException(a);
             }
+            JTextArea details= new JTextArea();
+            details.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            details.setPreferredSize(new Dimension(500,80));
+            details.setEditable(false);
+            String[]text1={"Doctor name- "+ docprint.get(doctorselected).getDoctor_name(),"Patient name- "+patient_name+" "+patient_surname,"Date- "+dateselected+"th of january","Time- "+timeselected+":00"+" Notes- "+decryptedText,"Cost- "+cost};
+            for (String line : text1) {
+                details.append(line + "\n");
+            }
+            JPanel textareapanel=new JPanel(new FlowLayout());
+            textareapanel.add(details);
+            viewconsultationbuttonpannel.add(textareapanel);
+            viewconsultationbuttonpannel.revalidate();
+            viewconsultationbuttonpannel.repaint();
+            viewconsultationdetails.setEnabled(false);
         });
     }
     /**
@@ -356,57 +340,42 @@ public class gui extends JFrame {// decide where to have the arrays so that data
 
         JTextField name= new JTextField();
         name.setPreferredSize(new Dimension(100,30));
-        name.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String patient_nametemp=name.getText();
-                if (!patient_nametemp.matches("[a-zA-Z]+")) {
-                    JOptionPane.showMessageDialog(null, "First name should only contain text");
-                }
+        name.addActionListener(e -> {
+            String patient_nametemp=name.getText();
+            if (!patient_nametemp.matches("[a-zA-Z]+")) {
+                JOptionPane.showMessageDialog(null, "First name should only contain text");
             }
         });
         JTextField surname= new JTextField();
         surname.setPreferredSize(new Dimension(100,30));
-        surname.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String patient_surnametemp=surname.getText();
-                if (!patient_surnametemp.matches("[a-zA-Z]+")) {
-                    JOptionPane.showMessageDialog(null, "Surname should only contain text");
-                }
+        surname.addActionListener(e -> {
+            String patient_surnametemp=surname.getText();
+            if (!patient_surnametemp.matches("[a-zA-Z]+")) {
+                JOptionPane.showMessageDialog(null, "Surname should only contain text");
             }
         });
         JTextField nictext= new JTextField();
         nictext.setPreferredSize(new Dimension(100,30));
-        nictext.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String nictemp= nictext.getText();
-                if(!nictemp.matches("^[0-9]+$")||(nictemp.length()!=6)){
-                    JOptionPane.showMessageDialog(null, "NIC number is not valid, try entering it again");
-                }
+        nictext.addActionListener(e -> {
+            String nictemp= nictext.getText();
+            if(!nictemp.matches("^[0-9]+$")||(nictemp.length()!=6)){
+                JOptionPane.showMessageDialog(null, "NIC number is not valid, try entering it again");
             }
         });
         JTextField mobileno= new JTextField();
         mobileno.setPreferredSize(new Dimension(100,30));
-        mobileno.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String mobilenumtemp=mobileno.getText();
-                if(mobilenumtemp.length()!=10){
-                    JOptionPane.showMessageDialog(null, "Mobile number should contain 10 digits");
-                }
+        mobileno.addActionListener(e -> {
+            String mobilenumtemp=mobileno.getText();
+            if(mobilenumtemp.length()!=10){
+                JOptionPane.showMessageDialog(null, "Mobile number should contain 10 digits");
             }
         });
         JTextField dob= new JTextField();
         dob.setPreferredSize(new Dimension(100,30));
-        dob.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String patient_DOBtemp=dob.getText();
-                if (!isValidDOB(patient_DOBtemp)){
-                    JOptionPane.showMessageDialog(null, "Date of birth should be entered in this format with slashes (dd/mm/yyyy)");
-                }
+        dob.addActionListener(e -> {
+            String patient_DOBtemp=dob.getText();
+            if (!isValidDOB(patient_DOBtemp)){
+                JOptionPane.showMessageDialog(null, "Date of birth should be entered in this format with slashes (dd/mm/yyyy)");
             }
         });
         JButton button1= new JButton("Create Consultation");
@@ -432,58 +401,55 @@ public class gui extends JFrame {// decide where to have the arrays so that data
             }
         });
         NotesTextarea.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        button1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {//create object after all inputs are validated
-                    patientNIC=Integer.parseInt(nictext.getText());
-                    patient_mobile_number=Integer.parseInt(mobileno.getText());
-                    patient_name=name.getText();
-                    patient_surname=surname.getText();
-                    patient_DOB=dob.getText();
-                    setNotes(NotesTextarea.getText());
-                    JOptionPane.showMessageDialog(null, "Successfully created consultation, this window will close in 2 seconds");
-                    patients.add(new patient(patientNIC,patient_name,patient_surname,patient_DOB,patient_mobile_number));
-                    Thread.sleep(2000);
-                    if (patients.size()==1){
-                        cost=15;
-                    }else {
-                        for (int x = 0;x<patients.size()-1;x++){
-                            if (patients.get(x).getPatientID()==patientNIC){
-                                cost=25;
-                            }else{
-                                cost=15;
-                            }
+        button1.addActionListener(e -> {
+            try {//create object after all inputs are validated
+                patientNIC=Integer.parseInt(nictext.getText());
+                patient_mobile_number=Integer.parseInt(mobileno.getText());
+                patient_name=name.getText();
+                patient_surname=surname.getText();
+                patient_DOB=dob.getText();
+                setNotes(NotesTextarea.getText());
+                JOptionPane.showMessageDialog(null, "Successfully created consultation, this window will close in 2 seconds");
+                patients.add(new patient(patientNIC,patient_name,patient_surname,patient_DOB,patient_mobile_number));
+                Thread.sleep(2000);
+                if (patients.size()==1){
+                    cost=15;
+                }else {
+                    for (int x = 0;x<patients.size()-1;x++){
+                        if (patients.get(x).getPatientID()==patientNIC){
+                            cost=25;
+                        }else{
+                            cost=15;
                         }
                     }
-                    try {
-                        cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-                        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
-                        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-                        byte[] encrypted = cipher.doFinal(notes.getBytes(StandardCharsets.UTF_8));
-                        notes = Base64.getEncoder().encodeToString(encrypted);
-
-                    } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException |
-                             BadPaddingException | InvalidKeyException a) {
-                        throw new RuntimeException(a);
-                    }
-                    consultations.add(new consultation(docname,patient_name+" "+patient_surname,dateofbirthformatter.parse(patient_DOB),timeselected,notes,cost));
-                    saveDetails();
-                }catch (Exception a){
-                    System.out.println("error");
                 }
-                newFrame.setVisible(false);
-                newFrame.dispose();
-                JPanel flow=new JPanel(new FlowLayout());
-                flow.add(viewconsultationdetails);
-                flow.add(exit);
-                viewconsultationbuttonpannel.add(flow);
-                mainpanel.add(viewconsultationbuttonpannel);
-                mainpanel.revalidate();
-                mainpanel.repaint();
-                setVisible(true);
-                selectdocotrbutton.setEnabled(false);
+                try {
+                    cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+                    SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+                    cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                    byte[] encrypted = cipher.doFinal(notes.getBytes(StandardCharsets.UTF_8));
+                    notes = Base64.getEncoder().encodeToString(encrypted);
+
+                } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException |
+                         BadPaddingException | InvalidKeyException a1) {
+                    throw new RuntimeException(a1);
+                }
+                consultations.add(new consultation(docname,patient_name+" "+patient_surname,dateofbirthformatter.parse(patient_DOB),timeselected,notes,cost));
+                saveDetails();
+            }catch (Exception a1){
+                System.out.println("error");
             }
+            newFrame.setVisible(false);
+            newFrame.dispose();
+            JPanel flow=new JPanel(new FlowLayout());
+            flow.add(viewconsultationdetails);
+            flow.add(exit);
+            viewconsultationbuttonpannel.add(flow);
+            mainpanel.add(viewconsultationbuttonpannel);
+            mainpanel.revalidate();
+            mainpanel.repaint();
+            setVisible(true);
+            selectdocotrbutton.setEnabled(false);
         });
         panel3.add(nametext);
         panel3.add(name);
@@ -517,8 +483,7 @@ public class gui extends JFrame {// decide where to have the arrays so that data
         newFrame.setResizable(false);
     }
     public boolean fullybooked(int input, int dateselected,int timeslot){//checks whether the time slot on a certain day is booked
-        boolean a = !arrays[input][dateselected][timeslot].equals("NO");
-        return a;
+        return !arrays[input][dateselected][timeslot].equals("NO");
     }
     public boolean isValidDOB(String dobString) {//checks whether date of birth assigned is valid
         String[] dobParts = dobString.split("/");
@@ -532,10 +497,7 @@ public class gui extends JFrame {// decide where to have the arrays so that data
         if (month<1||month>12) {
             return false;
         }
-        if (year<1900||year>Calendar.getInstance().get(Calendar.YEAR)) {
-            return false;
-        }
-        return true;
+        return year >= 1900 && year <= Calendar.getInstance().get(Calendar.YEAR);
     }
     public void saveDetails(){//save details to file
         String doccountemps=Integer.toString(patient.getPatientcount());
@@ -543,12 +505,12 @@ public class gui extends JFrame {// decide where to have the arrays so that data
             FileWriter writeMe = new FileWriter(patientdata);
             writeMe.write(doccountemps+"\n");
             String datewrite;
-            for (int x= 0;x<patients.size();x++){
-                datewrite=dateofbirthformatter.format(patients.get(x).getDateofbirth());
-                writeMe.write(patients.get(x).getPatientID()+"\n");
-                writeMe.write(patients.get(x).getPatientname()+"\n");
-                writeMe.write(datewrite+"\n");
-                writeMe.write(patients.get(x).getMobilenumber()+"\n");
+            for (patient patient : patients) {
+                datewrite = dateofbirthformatter.format(patient.getDateofbirth());
+                writeMe.write(patient.getPatientID() + "\n");
+                writeMe.write(patient.getPatientname() + "\n");
+                writeMe.write(datewrite + "\n");
+                writeMe.write(patient.getMobilenumber() + "\n");
             }
             writeMe.close();
         }
@@ -559,7 +521,7 @@ public class gui extends JFrame {// decide where to have the arrays so that data
     }
     public void readDetails(){//method to get previous patient details
         boolean exists = patientdata.exists();
-        if(exists==true) {
+        if(exists) {
             try {
                 String[] firstandsurname;
                 String fname, surname, mobilenumbertemp, nametemp, dateofbirth, patientcount;

@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 public class westminsterskinconsultationmanager implements  skinconsultationmanager {
-    private static ArrayList<Doctor>doctors=new ArrayList<>(10);
+    private static final ArrayList<Doctor>doctors=new ArrayList<>(10);
     File doctordata = new File("doctorData.txt");
     Scanner input = new Scanner(System.in);
     @Override
@@ -90,7 +90,7 @@ public class westminsterskinconsultationmanager implements  skinconsultationmana
                 new_licnumber=temp1;
                 System.out.print("Enter Specialization: ");
                 new_specialization = input.nextLine();
-                while (!new_specialization.matches("[a-zA-Z\s]+")) {
+                while (!new_specialization.matches("[a-zA-Z ]+")) {
                     System.out.println("Specialization should only contain letters");
                     new_specialization = input.nextLine();
                 }
@@ -115,7 +115,7 @@ public class westminsterskinconsultationmanager implements  skinconsultationmana
             deleteliscensenum = Integer.parseInt(input.nextLine());
             for (int x = 0; x < doctors.size(); x++) {
                 if (doctors.get(x).getDoc_licNumber() == deleteliscensenum) {
-                    System.out.println("");
+                    System.out.println();
                     System.out.println("Doctor deleted- " + doctors.get(x).getDoctor_name());
                     System.out.println("License number- " + doctors.get(x).getDoc_licNumber());
                     System.out.println("Specialization- " + doctors.get(x).getDoc_specialisation());
@@ -137,11 +137,11 @@ public class westminsterskinconsultationmanager implements  skinconsultationmana
         try{
             FileWriter writeMe = new FileWriter(doctordata);
             writeMe.write(doccountemps+"\n");
-            for (int x= 0;x<doctors.size();x++){
-                writeMe.write(doctors.get(x).getDoctor_name()+"\n");
-                writeMe.write(doctors.get(x).getDoc_licNumber()+"\n");
-                writeMe.write(doctors.get(x).getDoc_specialisation()+"\n");
-                writeMe.write(doctors.get(x).getMobilenumber()+"\n");
+            for (Doctor doctor : doctors) {
+                writeMe.write(doctor.getDoctor_name() + "\n");
+                writeMe.write(doctor.getDoc_licNumber() + "\n");
+                writeMe.write(doctor.getDoc_specialisation() + "\n");
+                writeMe.write(doctor.getMobilenumber() + "\n");
             }
             writeMe.close();
         }
@@ -153,8 +153,8 @@ public class westminsterskinconsultationmanager implements  skinconsultationmana
     @Override//count
     public void printDoctor () {//prints out sorted doctors according to their surname
         ArrayList<Doctor>doctortemp;
-        doctortemp=(ArrayList)doctors.clone();
-        Collections.sort(doctortemp,Doctor.DocNameComparator);
+        doctortemp=(ArrayList<Doctor>)doctors.clone();
+        doctortemp.sort(Doctor.DocNameComparator);
         for (int x = 0; x<doctortemp.size(); x++){
             System.out.println("Doctor "+(x+1)+"\n");
             System.out.println("Doctor Name- "+doctortemp.get(x).getDoctor_name());
@@ -167,7 +167,7 @@ public class westminsterskinconsultationmanager implements  skinconsultationmana
     @Override
     public void readDetails(){//reads details from text file
         boolean exists = doctordata.exists();
-        if(exists==true) {
+        if(exists) {
             try {
                 String[] firstandsurname;
                 String fname, surname, mobilenumbertemp, nametemp, specialtemp, licnumtemp, doccounttemp;
@@ -197,7 +197,7 @@ public class westminsterskinconsultationmanager implements  skinconsultationmana
     @Override
     public void gui() {//creates gui object
         String name= "Doctor Schedule";
-        gui test= new gui(name);
+        new gui(name);
     }
 
 

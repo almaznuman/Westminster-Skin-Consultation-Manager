@@ -40,7 +40,7 @@ class westminsterskinconsultationmanagerTest {
     void saveDetails() {
         ArrayList<Doctor> doctors=westminsterskinconsultationmanager.getDoctors();
         int doccountemps=0;
-        int checkagainst=0;
+        int checkagainst;
         for (int x=0;x<5;x++){
             doctors.add(new Doctor("Cosmetic skin specialist",31131,"Andrew","Tristan",767360276));
             doccountemps++;
@@ -49,11 +49,11 @@ class westminsterskinconsultationmanagerTest {
         try{
             FileWriter writeMe = new FileWriter(file);
             writeMe.write(doccountemps+"\n");
-            for (int x= 0;x<doctors.size();x++){
-                writeMe.write(doctors.get(x).getDoctor_name()+"\n");
-                writeMe.write(doctors.get(x).getDoc_licNumber()+"\n");
-                writeMe.write(doctors.get(x).getDoc_specialisation()+"\n");
-                writeMe.write(doctors.get(x).getMobilenumber()+"\n");
+            for (Doctor doctor : doctors) {
+                writeMe.write(doctor.getDoctor_name() + "\n");
+                writeMe.write(doctor.getDoc_licNumber() + "\n");
+                writeMe.write(doctor.getDoc_specialisation() + "\n");
+                writeMe.write(doctor.getMobilenumber() + "\n");
             }
             writeMe.close();
             FileReader docread = new FileReader("doctortestdata.txt");
